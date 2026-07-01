@@ -10,7 +10,7 @@ import Checkout from './pages/Checkout';
 import Orders from './pages/Orders';
 import TrackOrder from './pages/TrackOrder';
 import AdminDashboard from './pages/AdminDashboard';
-import logo from './logo.svg';
+import logo from './logo.png';
 
 const ROUTES = {
   LOGIN: 'login',

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { api } from '../api';
 import { setToken } from '../authStore';
-import logo from '../logo.svg';
+import logo from '../logo.png';
 
 export default function Register({ onAuthed }) {
   const [name, setName] = useState('');
