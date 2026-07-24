@@ -1,6 +1,6 @@
 const express = require('express');
-
-const { openDb, all, get } = require('../db/db');
+const { openDb, all, get, run } = require('../db/db');
+const { requireAuth, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -57,7 +57,6 @@ router.get('/', async (req, res) => {
       }
     ];
 
-    // group by category
     const grouped = items.reduce((acc, it) => {
       const cat = it.category || 'General';
       if (!acc[cat]) acc[cat] = [];
@@ -79,6 +78,85 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.get('/admin/all', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const db = openDb();
+    const items = await all(
+      db,
+      'SELECT id, name, description, price_cents, image_url, category, is_available FROM menu_items ORDER BY id DESC'
+    );
+    return res.json({ items });
+  } catch (e) {
+    return res.status(500).json({ error: 'Failed to fetch all admin menu items' });
+  }
+});
+
+router.post('/admin', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { name, description, price_cents, image_url, category, is_available } = req.body;
+    if (!name || price_cents === undefined) {
+      return res.status(400).json({ error: 'Name and price_cents are required' });
+    }
+    const db = openDb();
+    const result = await run(
+      db,
+      'INSERT INTO menu_items (name, description, price_cents, image_url, category, is_available) VALUES (?, ?, ?, ?, ?, ?)',
+      [
+        name,
+        description || '',
+        Number(price_cents),
+        image_url || '',
+        category || 'General',
+        is_available === undefined ? 1 : Number(is_available)
+      ]
+    );
+    return res.status(201).json({ ok: true, id: result.lastID });
+  } catch (e) {
+    return res.status(500).json({ error: 'Failed to create menu item' });
+  }
+});
+
+router.put('/admin/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const { name, description, price_cents, image_url, category, is_available } = req.body;
+    const db = openDb();
+    await run(
+      db,
+      'UPDATE menu_items SET name = ?, description = ?, price_cents = ?, image_url = ?, category = ?, is_available = ? WHERE id = ?',
+      [name, description, Number(price_cents), image_url, category, Number(is_available), id]
+    );
+    return res.json({ ok: true });
+  } catch (e) {
+    return res.status(500).json({ error: 'Failed to update menu item' });
+  }
+});
+
+router.patch('/admin/:id/toggle', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const db = openDb();
+    const existing = await get(db, 'SELECT is_available FROM menu_items WHERE id = ?', [id]);
+    if (!existing) return res.status(404).json({ error: 'Menu item not found' });
+    const nextVal = existing.is_available === 1 ? 0 : 1;
+    await run(db, 'UPDATE menu_items SET is_available = ? WHERE id = ?', [nextVal, id]);
+    return res.json({ ok: true, is_available: nextVal });
+  } catch (e) {
+    return res.status(500).json({ error: 'Failed to toggle availability' });
+  }
+});
+
+router.delete('/admin/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const db = openDb();
+    await run(db, 'DELETE FROM menu_items WHERE id = ?', [id]);
+    return res.json({ ok: true });
+  } catch (e) {
+    return res.status(500).json({ error: 'Failed to delete menu item' });
+  }
+});
+
 router.get('/:id', async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -92,4 +170,3 @@ router.get('/:id', async (req, res) => {
 });
 
 module.exports = router;
-

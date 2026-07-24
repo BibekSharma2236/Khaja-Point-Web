@@ -6,6 +6,14 @@ function formatINR(cents) {
   return `₹${rupees.toLocaleString('en-IN')}`;
 }
 
+const PRESET_ADDRESSES = [
+  'Thamel Marg, Kathmandu',
+  'Jhamsikhel, Lalitpur',
+  'Durbar Marg, Kathmandu',
+  'Patan Durbar Square, Lalitpur',
+  'New Road, Kathmandu'
+];
+
 export default function Checkout({ cart, onSuccess }) {
   const [deliveryName, setDeliveryName] = useState('');
   const [deliveryPhone, setDeliveryPhone] = useState('');
@@ -15,10 +23,10 @@ export default function Checkout({ cart, onSuccess }) {
   const [error, setError] = useState('');
 
   const [paymentMethod, setPaymentMethod] = useState('esewa');
-  const [paying, setPaying] = useState(false);
-  const [payStepError, setPayStepError] = useState('');
-  const [lastOrderId, setLastOrderId] = useState(null);
-
+  const [payingModal, setPayingModal] = useState(false);
+  const [esewaId, setEsewaId] = useState('');
+  const [esewaPin, setEsewaPin] = useState('');
+  const [paymentStep, setPaymentStep] = useState('INIT'); // INIT, PROCESS, SUCCESS
 
   const items = useMemo(() => {
     const map = cart || {};
@@ -34,14 +42,26 @@ export default function Checkout({ cart, onSuccess }) {
   const tax_cents = Math.round(subtotal_cents * 0.05);
   const total_cents = subtotal_cents + delivery_fee_cents + tax_cents;
 
-  async function onSubmit(e) {
+  async function handleOrderSubmission(e) {
     e.preventDefault();
-    setError('');
-    setPayStepError('');
-    setLoading(true);
-    setPaying(false);
-    setLastOrderId(null);
+    if (!deliveryName || !deliveryPhone || !deliveryAddress) {
+      setError('Please fill in name, phone, and delivery address.');
+      return;
+    }
 
+    if (paymentMethod === 'esewa' || paymentMethod === 'khalti') {
+      setPayingModal(true);
+      setPaymentStep('INIT');
+      return;
+    }
+
+    // Direct Cash on Delivery
+    await executeBackendCheckout();
+  }
+
+  async function executeBackendCheckout() {
+    setLoading(true);
+    setError('');
     try {
       const data = await api.checkout({
         deliveryName,
@@ -51,12 +71,8 @@ export default function Checkout({ cart, onSuccess }) {
         items
       });
 
-      setLastOrderId(data?.orderId);
-
-      if (paymentMethod === 'esewa') {
-        setPaying(true);
-        const payResult = await api.payEsewa({ orderId: data.orderId, forceFailure: false });
-        if (!payResult?.ok) throw new Error('Esewa payment failed');
+      if (paymentMethod === 'esewa' || paymentMethod === 'khalti') {
+        await api.payEsewa({ orderId: data.orderId, forceFailure: false });
       }
 
       onSuccess?.({ ...data, paymentMethod });
@@ -64,99 +80,230 @@ export default function Checkout({ cart, onSuccess }) {
       setError(err.message || 'Checkout failed');
     } finally {
       setLoading(false);
-      setPaying(false);
+      setPayingModal(false);
     }
+  }
+
+  async function processMockDigitalPayment() {
+    setPaymentStep('PROCESS');
+    setTimeout(async () => {
+      setPaymentStep('SUCCESS');
+      setTimeout(async () => {
+        await executeBackendCheckout();
+      }, 1200);
+    }, 1500);
   }
 
   return (
     <div className="page">
       <div className="topbar">
         <div>
-          <h2>Checkout</h2>
-          <div className="muted">Confirm delivery details</div>
+          <h2>Checkout & Payment</h2>
+          <div className="muted">Confirm delivery coordinates and select your digital payment portal</div>
         </div>
       </div>
 
       <div className="grid2">
         <div className="card">
-          <form onSubmit={onSubmit} className="form">
+          <form onSubmit={handleOrderSubmission} className="form">
+            <div className="sectionHead">
+              <div className="sectionTitle">1. Delivery Contact & Address</div>
+            </div>
+
             <label>
-              Name
-              <input value={deliveryName} onChange={(e) => setDeliveryName(e.target.value)} required />
+              Full Name
+              <input
+                type="text"
+                placeholder="e.g. Aarav Sharma"
+                value={deliveryName}
+                onChange={(e) => setDeliveryName(e.target.value)}
+                required
+              />
             </label>
+
             <label>
-              Phone
-              <input value={deliveryPhone} onChange={(e) => setDeliveryPhone(e.target.value)} required />
+              Phone Number
+              <input
+                type="tel"
+                placeholder="98XXXXXXXX"
+                value={deliveryPhone}
+                onChange={(e) => setDeliveryPhone(e.target.value)}
+                required
+              />
             </label>
+
             <label>
-              Address
-              <textarea value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value)} required />
+              Delivery Location
+              <textarea
+                placeholder="Street address, house no., landmark..."
+                value={deliveryAddress}
+                onChange={(e) => setDeliveryAddress(e.target.value)}
+                required
+              />
             </label>
-            <label>
-              Delivery Instructions (optional)
-              <textarea value={deliveryInstructions} onChange={(e) => setDeliveryInstructions(e.target.value)} />
-            </label>
-            <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <div style={{ fontWeight: 900, opacity: 0.95 }}>Payment method</div>
-              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+              <span className="mutedSmall" style={{ fontWeight: 700 }}>Quick Presets:</span>
+              {PRESET_ADDRESSES.map((addr) => (
                 <button
                   type="button"
-                  className={paymentMethod === 'esewa' ? 'chip chipActive' : 'chip'}
-                  onClick={() => setPaymentMethod('esewa')}
+                  key={addr}
+                  className="pill"
+                  style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '4px 10px' }}
+                  onClick={() => setDeliveryAddress(addr)}
                 >
-                  Esewa (Mock)
+                  📍 {addr}
                 </button>
-                <button
-                  type="button"
-                  className={paymentMethod === 'cod' ? 'chip chipActive' : 'chip'}
-                  onClick={() => setPaymentMethod('cod')}
-                >
-                  Cash on Delivery
-                </button>
+              ))}
+            </div>
+
+            <label>
+              Special Delivery Notes (Optional)
+              <textarea
+                placeholder="e.g. Please leave at front desk, ring doorbell..."
+                value={deliveryInstructions}
+                onChange={(e) => setDeliveryInstructions(e.target.value)}
+              />
+            </label>
+
+            <div className="sectionHead" style={{ marginTop: 12 }}>
+              <div className="sectionTitle">2. Select Payment Method</div>
+            </div>
+
+            <div className="paymentGrid">
+              <div
+                className={paymentMethod === 'esewa' ? 'paymentCard paymentCardActive' : 'paymentCard'}
+                onClick={() => setPaymentMethod('esewa')}
+              >
+                <div style={{ fontSize: '1.4rem' }}>📲</div>
+                <div className="paymentTitle">eSewa</div>
+                <div className="mutedSmall">Digital Wallet</div>
               </div>
-              {paymentMethod === 'esewa' ? (
-                <div className="mutedSmall">
-                  Demo mode: payment instantly updates order status as SUCCESS.
-                </div>
-              ) : (
-                <div className="mutedSmall">Demo mode: order will remain as PLACED until admin confirms.</div>
-              )}
+
+              <div
+                className={paymentMethod === 'khalti' ? 'paymentCard paymentCardActive' : 'paymentCard'}
+                onClick={() => setPaymentMethod('khalti')}
+              >
+                <div style={{ fontSize: '1.4rem' }}>💜</div>
+                <div className="paymentTitle">Khalti</div>
+                <div className="mutedSmall">Instant Pay</div>
+              </div>
+
+              <div
+                className={paymentMethod === 'cod' ? 'paymentCard paymentCardActive' : 'paymentCard'}
+                onClick={() => setPaymentMethod('cod')}
+              >
+                <div style={{ fontSize: '1.4rem' }}>💵</div>
+                <div className="paymentTitle">COD</div>
+                <div className="mutedSmall">Pay later</div>
+              </div>
             </div>
 
             {error ? <div className="error">{error}</div> : null}
-            {payStepError ? <div className="error">{payStepError}</div> : null}
-            {lastOrderId ? <div className="mutedSmall">Last order: #{lastOrderId}</div> : null}
 
-
-            <button disabled={loading || paying || items.length === 0}>
-              {paying ? 'Processing Esewa payment...' : loading ? 'Placing order...' : 'Place order'}
-            </button>
+            <div style={{ marginTop: 16 }}>
+              <button disabled={loading || items.length === 0} className="btn">
+                {loading ? 'Processing Order...' : paymentMethod === 'cod' ? 'Place Order (COD)' : `Pay with ${paymentMethod.toUpperCase()} →`}
+              </button>
+            </div>
           </form>
-
         </div>
 
         <div className="card">
-          <h3>Payable</h3>
+          <h3 style={{ fontSize: '1.25rem', marginBottom: 16 }}>Order Summary</h3>
           <div className="totRow">
-            <span>Subtotal</span>
+            <span>Items Subtotal</span>
             <span>{formatINR(subtotal_cents)}</span>
           </div>
           <div className="totRow">
             <span>Delivery Fee</span>
-            <span>{formatINR(delivery_fee_cents)}</span>
+            <span>{delivery_fee_cents === 0 ? 'FREE' : formatINR(delivery_fee_cents)}</span>
           </div>
           <div className="totRow">
             <span>Tax (5%)</span>
             <span>{formatINR(tax_cents)}</span>
           </div>
           <div className="totRow totGrand">
-            <span>Total</span>
-            <span>{formatINR(total_cents)}</span>
+            <span>Total Amount</span>
+            <span style={{ color: 'var(--brand-primary)' }}>{formatINR(total_cents)}</span>
           </div>
-          <div className="muted">Orders are tracked after placing.</div>
+          <div className="miniNotice" style={{ marginTop: 20 }}>
+            🔒 <strong>Guaranteed Safe Delivery:</strong> Your order will be assigned to a dedicated courier with live location telemetry.
+          </div>
         </div>
       </div>
+
+      {/* Mock Digital Wallet Payment Modal */}
+      {payingModal ? (
+        <div className="modalOverlay">
+          <div className="modalCard">
+            <button className="modalClose" onClick={() => setPayingModal(false)}>✕</button>
+
+            {paymentStep === 'INIT' ? (
+              <div>
+                <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                  <div style={{ fontSize: '2.5rem' }}>{paymentMethod === 'esewa' ? '🟢' : '💜'}</div>
+                  <h2 style={{ fontSize: '1.5rem', marginTop: 6 }}>
+                    {paymentMethod === 'esewa' ? 'eSewa Payment Portal' : 'Khalti Direct Checkout'}
+                  </h2>
+                  <div className="mutedSmall">Amount to pay: <strong>{formatINR(total_cents)}</strong></div>
+                </div>
+
+                <div style={{ background: 'rgba(255,255,255,0.05)', padding: 16, borderRadius: 16, textAlign: 'center', marginBottom: 16 }}>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: 8 }}>Scan QR Code or enter ID</div>
+                  <div style={{ width: 120, height: 120, margin: 'auto', background: '#fff', padding: 8, borderRadius: 12 }}>
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=KhajaPoint_Order_${total_cents}`}
+                      alt="Payment QR"
+                      style={{ width: '100%', height: '100%' }}
+                    />
+                  </div>
+                </div>
+
+                <div className="form">
+                  <label>
+                    {paymentMethod.toUpperCase()} ID / Phone
+                    <input
+                      type="text"
+                      placeholder="98XXXXXXXX"
+                      value={esewaId}
+                      onChange={(e) => setEsewaId(e.target.value)}
+                    />
+                  </label>
+                  <label>
+                    MPIN / Password
+                    <input
+                      type="password"
+                      placeholder="••••"
+                      value={esewaPin}
+                      onChange={(e) => setEsewaPin(e.target.value)}
+                    />
+                  </label>
+                  <button className="btn" onClick={processMockDigitalPayment}>
+                    Confirm Payment • {formatINR(total_cents)}
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
+            {paymentStep === 'PROCESS' ? (
+              <div style={{ textAlign: 'center', padding: '30px 0' }}>
+                <div style={{ fontSize: '3rem', animation: 'spin 1s linear infinite' }}>⏳</div>
+                <h3 style={{ marginTop: 16 }}>Communicating with Bank Server...</h3>
+                <div className="mutedSmall">Verifying transaction signature...</div>
+              </div>
+            ) : null}
+
+            {paymentStep === 'SUCCESS' ? (
+              <div style={{ textAlign: 'center', padding: '30px 0' }}>
+                <div style={{ fontSize: '3.5rem' }}>✅</div>
+                <h3 style={{ marginTop: 12, color: 'var(--accent-green)' }}>Payment Authorized!</h3>
+                <div className="mutedSmall">Redirecting to Live Order Tracking...</div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
-

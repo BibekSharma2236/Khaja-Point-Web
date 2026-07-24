@@ -78,6 +78,7 @@ export default function App() {
           id,
           name: item.name,
           price_cents: item.price_cents,
+          image_url: item.image_url,
           quantity: 1
         };
       }
@@ -113,16 +114,16 @@ export default function App() {
     <div className="appShell">
       {user ? (
         <header className="nav">
-          <div className="brandWrap">
+          <div className="brandWrap" onClick={() => setRoute(ROUTES.DASHBOARD)}>
             <img src={logo} alt="Khaja Point logo" className="brandLogo" />
             <div>
               <div className="brand">Khaja Point</div>
-              <div className="brandSub">Premium delivery dashboard</div>
+              <div className="brandSub">Kathmandu Culinary Portal</div>
             </div>
           </div>
           <nav className="navLinks">
             <button className={route === ROUTES.DASHBOARD ? 'navBtn navBtnActive' : 'navBtn'} onClick={() => setRoute(ROUTES.DASHBOARD)}>
-              Dashboard
+              Home
             </button>
             <button className={route === ROUTES.MENU ? 'navBtn navBtnActive' : 'navBtn'} onClick={() => setRoute(ROUTES.MENU)}>
               Menu
@@ -135,13 +136,18 @@ export default function App() {
             </button>
             {user?.role === 'admin' ? (
               <button className={route === ROUTES.ADMIN ? 'navBtn navBtnActive' : 'navBtn'} onClick={() => setRoute(ROUTES.ADMIN)}>
-                Admin
+                Admin Center
               </button>
             ) : null}
           </nav>
           <div className="navRight">
-            <div className="mutedSmall">Hello, {user.name}</div>
-            <button className="btn btnGhost" onClick={logout}>Logout</button>
+            <div className="userBadge">
+              <div className="userAvatar">{user.name?.[0]?.toUpperCase() || 'U'}</div>
+              <span>{user.name}</span>
+            </div>
+            <button className="btn btnGhost" style={{ padding: '6px 14px', fontSize: '0.85rem' }} onClick={logout}>
+              Logout
+            </button>
           </div>
         </header>
       ) : null}
@@ -150,23 +156,21 @@ export default function App() {
         <div className="authWrap">
           <div className="authPanel">
             <div className="authHero">
-              <div className="eyebrow">Modern food ordering</div>
-              <h1>Khaja Point</h1>
-              <p className="heroText">A polished, full-stack dining experience with live order tracking, seamless checkout, and an elegant dashboard.</p>
+              <div className="eyebrow">✨ Next-Gen Food Ordering</div>
+              <h1 style={{ fontSize: '2.5rem', margin: '10px 0', fontWeight: 900 }}>Khaja Point</h1>
+              <p className="heroText">A premium, full-stack dining platform serving authentic Nepali dishes with live socket driver telemetry and instant eSewa/Khalti checkout.</p>
               <ul className="bulletList">
-                <li className="bulletPoint">Fast checkout with mock Esewa and COD</li>
-                <li className="bulletPoint">Live order progress and delivery updates</li>
-                <li className="bulletPoint">Beautiful menu browsing and cart flow</li>
+                <li className="bulletPoint">Rich culinary dish photography and interactive menu search</li>
+                <li className="bulletPoint">Instant eSewa, Khalti, & COD checkout simulations</li>
+                <li className="bulletPoint">Live map delivery telemetry powered by Socket.IO</li>
               </ul>
             </div>
             <div className="authFormBox">
               {route === ROUTES.REGISTER ? <Register onAuthed={handleAuthSuccess} /> : <Login onAuthed={handleAuthSuccess} />}
-              <div className="authFooter">
-                {authError ? <div className="error">{authError}</div> : null}
-                <button className="linkBtn" onClick={() => setRoute(route === ROUTES.REGISTER ? ROUTES.LOGIN : ROUTES.REGISTER)}>
-                  {route === ROUTES.REGISTER ? 'Already have an account? Login' : 'New here? Register'}
-                </button>
-              </div>
+              {authError ? <div className="error">{authError}</div> : null}
+              <button className="linkBtn" onClick={() => setRoute(route === ROUTES.REGISTER ? ROUTES.LOGIN : ROUTES.REGISTER)}>
+                {route === ROUTES.REGISTER ? 'Already have an account? Login' : 'New here? Create account'}
+              </button>
             </div>
           </div>
         </div>
@@ -174,9 +178,9 @@ export default function App() {
 
       {user ? (
         <main className="main">
-          {route === ROUTES.DASHBOARD ? <AppHome user={user} cartCount={cartCount} onNavigate={setRoute} /> : null}
+          {route === ROUTES.DASHBOARD ? <AppHome user={user} cartCount={cartCount} onNavigate={setRoute} onAddToCart={addToCart} /> : null}
 
-          {route === ROUTES.MENU ? <Menu onAddToCart={addToCart} cart={cart} /> : null}
+          {route === ROUTES.MENU ? <Menu onAddToCart={addToCart} cart={cart} setQty={setQty} /> : null}
 
           {route === ROUTES.CART ? <Cart cart={cart} setQty={setQty} onGoCheckout={() => setRoute(ROUTES.CHECKOUT)} /> : null}
 
@@ -202,4 +206,3 @@ export default function App() {
     </div>
   );
 }
-

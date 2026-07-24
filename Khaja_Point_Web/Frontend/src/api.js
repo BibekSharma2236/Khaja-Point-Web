@@ -60,6 +60,36 @@ export const api = {
     return apiFetch('/api/menu');
   },
 
+  async getAdminMenuItems() {
+    return apiFetch('/api/menu/admin/all');
+  },
+
+  async createMenuItem(itemData) {
+    return apiFetch('/api/menu/admin', {
+      method: 'POST',
+      body: JSON.stringify(itemData)
+    });
+  },
+
+  async updateMenuItem(id, itemData) {
+    return apiFetch(`/api/menu/admin/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(itemData)
+    });
+  },
+
+  async toggleMenuItemAvailability(id) {
+    return apiFetch(`/api/menu/admin/${id}/toggle`, {
+      method: 'PATCH'
+    });
+  },
+
+  async deleteMenuItem(id) {
+    return apiFetch(`/api/menu/admin/${id}`, {
+      method: 'DELETE'
+    });
+  },
+
   async checkout({ deliveryName, deliveryPhone, deliveryAddress, deliveryInstructions, items }) {
     return apiFetch('/api/orders', {
       method: 'POST',
@@ -123,5 +153,3 @@ export const api = {
     return apiFetch(`/api/orders/${orderId}/tracking`);
   }
 };
-
-

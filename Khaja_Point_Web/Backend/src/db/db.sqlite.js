@@ -140,160 +140,166 @@ async function initDb() {
   const items = [
     {
       name: 'Chicken Biryani',
-      description: 'Aromatic basmati rice with tender chicken.',
-      price_cents: 89900,
+      description: 'Aromatic basmati rice cooked with tender marinated chicken and exotic spices.',
+      price_cents: 899,
       category: 'Biryani',
-      image_url: ''
+      image_url: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&auto=format&fit=crop&q=80'
     },
     {
       name: 'Mutton Biryani',
-      description: 'Rich mutton biryani with traditional spices.',
-      price_cents: 109900,
+      description: 'Rich mutton biryani slow-cooked with royal traditional herbs.',
+      price_cents: 1099,
       category: 'Biryani',
-      image_url: ''
+      image_url: 'https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=600&auto=format&fit=crop&q=80'
     },
     {
       name: 'Veg Biryani',
-      description: 'Seasonal veggies with fragrant basmati rice.',
-      price_cents: 59900,
+      description: 'Seasonal garden veggies layered with fragrant basmati rice and saffron.',
+      price_cents: 599,
       category: 'Biryani',
-      image_url: ''
+      image_url: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=600&auto=format&fit=crop&q=80'
     },
     {
       name: 'Momo Platter',
-      description: 'Steamed dumplings served with spicy tomato chutney.',
-      price_cents: 49900,
+      description: 'Steamed dumplings served with spicy tomato sesame chutney & soup.',
+      price_cents: 499,
       category: 'Momo',
-      image_url: ''
+      image_url: 'https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=600&auto=format&fit=crop&q=80'
     },
     {
       name: 'Buff Chowmein',
-      description: 'Stir-fried noodles with spiced buffalo meat and vegetables.',
-      price_cents: 54900,
+      description: 'Stir-fried wok noodles with spiced buffalo meat and fresh vegetables.',
+      price_cents: 549,
       category: 'Nepali',
-      image_url: ''
+      image_url: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=600&auto=format&fit=crop&q=80'
     },
     {
       name: 'Chicken Sekuwa',
-      description: 'Smoky grilled chicken skewers with tangy achar.',
-      price_cents: 64900,
+      description: 'Smoky wood-grilled chicken skewers served with lemon and spicy achar.',
+      price_cents: 649,
       category: 'Nepali BBQ',
-      image_url: ''
+      image_url: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=600&auto=format&fit=crop&q=80'
     },
     {
       name: 'Chatamari',
-      description: 'Thin rice crepe topped with seasoned vegetables and egg.',
-      price_cents: 44900,
+      description: 'Authentic Nepali rice crepe topped with seasoned minced meat and egg.',
+      price_cents: 449,
       category: 'Nepali',
-      image_url: ''
+      image_url: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&auto=format&fit=crop&q=80'
     },
     {
       name: 'Aalu Tama',
-      description: 'Classic Nepali potato and bamboo shoot curry.',
-      price_cents: 39900,
+      description: 'Classic Nepali bamboo shoot, black-eyed beans, and potato curry soup.',
+      price_cents: 399,
       category: 'Nepali',
-      image_url: ''
+      image_url: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&auto=format&fit=crop&q=80'
     },
     {
       name: 'Samay Baji',
-      description: 'Traditional festive platter with beaten rice, potatoes, and pickles.',
-      price_cents: 49900,
+      description: 'Traditional festive platter with beaten rice, spiced meats, wo, and pickles.',
+      price_cents: 499,
       category: 'Nepali',
-      image_url: ''
+      image_url: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&auto=format&fit=crop&q=80'
     },
     {
       name: 'Newari Khaja',
-      description: 'Classic Newari snack set with bara, wo, and choila.',
-      price_cents: 74900,
+      description: 'Classic Newari snack set featuring choila, bara, baji, and fermented radish.',
+      price_cents: 749,
       category: 'Newari',
-      image_url: ''
+      image_url: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=600&auto=format&fit=crop&q=80'
     },
     {
       name: 'Thakali Khana',
-      description: 'Hearty thakali meal with rice, curry, and pickles.',
-      price_cents: 89900,
+      description: 'Authentic Thakali thali with aromatic rice, black lentil dal, curry, and gundruk.',
+      price_cents: 999,
       category: 'Thakali',
-      image_url: ''
+      image_url: 'https://images.unsplash.com/photo-1610192244261-3f33de3f55e4?w=600&auto=format&fit=crop&q=80'
     },
     {
       name: 'Juju Dhau',
-      description: 'Traditional Kathmandu yogurt dessert with a creamy finish.',
-      price_cents: 24900,
+      description: 'Famous Bhaktapur royal sweet curd served in a traditional clay pot finish.',
+      price_cents: 249,
       category: 'Desserts',
-      image_url: ''
+      image_url: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&auto=format&fit=crop&q=80'
     },
     {
       name: 'Sel Roti',
-      description: 'Sweet Nepali ring bread served warm with tea.',
-      price_cents: 19900,
+      description: 'Crispy ring-shaped sweetened rice flour bread served warm.',
+      price_cents: 199,
       category: 'Breakfast',
-      image_url: ''
+      image_url: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80'
     },
     {
       name: 'Pepperoni Pizza',
-      description: 'Crispy base topped with cheese and pepperoni.',
-      price_cents: 79900,
+      description: 'Artisanal wood-fired crust topped with mozzarella cheese and spicy pepperoni.',
+      price_cents: 799,
       category: 'Pizza',
-      image_url: ''
+      image_url: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&auto=format&fit=crop&q=80'
     },
     {
       name: 'Cheese Burger',
-      description: 'Juicy burger with cheese, lettuce, and sauce.',
-      price_cents: 59900,
+      description: 'Gourmet beef patty with melted cheddar, fresh lettuce, tomatoes, and chef sauce.',
+      price_cents: 599,
       category: 'Burgers',
-      image_url: ''
+      image_url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80'
     },
     {
       name: 'Grilled Sausage',
-      description: 'Spiced sausage served with a smoky glaze.',
-      price_cents: 39900,
+      description: 'Juicy spiced bratwurst sausages served with mustard dip and potato wedges.',
+      price_cents: 399,
       category: 'Starters',
-      image_url: ''
+      image_url: 'https://images.unsplash.com/photo-1529042410759-befb1204b468?w=600&auto=format&fit=crop&q=80'
     },
     {
       name: 'Thuppa Bowl',
-      description: 'Warm lentil soup with fresh herbs and spice.',
-      price_cents: 39900,
+      description: 'Hearty Himalayan noodle soup cooked in rich savory broth with fresh cilantro.',
+      price_cents: 399,
       category: 'Soups',
-      image_url: ''
+      image_url: 'https://images.unsplash.com/photo-1547592180-85f173990554?w=600&auto=format&fit=crop&q=80'
     },
     {
       name: 'Sprite',
-      description: 'Chilled lemon-lime soft drink.',
-      price_cents: 1900,
+      description: 'Chilled lemon-lime carbonated soda.',
+      price_cents: 100,
       category: 'Beverages',
-      image_url: ''
+      image_url: 'https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?w=600&auto=format&fit=crop&q=80'
     },
     {
       name: 'Coke',
-      description: 'Classic cola served cold.',
-      price_cents: 1900,
+      description: 'Ice-cold classic Coca-Cola.',
+      price_cents: 100,
       category: 'Beverages',
-      image_url: ''
+      image_url: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=600&auto=format&fit=crop&q=80'
     },
     {
       name: 'Fanta',
-      description: 'Refreshing orange soda.',
-      price_cents: 1900,
+      description: 'Crisp and fizzy orange soft drink.',
+      price_cents: 100,
       category: 'Beverages',
-      image_url: ''
+      image_url: 'https://images.unsplash.com/photo-1624517452488-04869289c4ca?w=600&auto=format&fit=crop&q=80'
     },
     {
       name: 'Red Bull',
-      description: 'Energy drink for a quick boost.',
-      price_cents: 29900,
+      description: 'Refreshing energy drink.',
+      price_cents: 299,
       category: 'Beverages',
-      image_url: ''
+      image_url: 'https://images.unsplash.com/photo-1622543925917-763c34d1a86e?w=600&auto=format&fit=crop&q=80'
     }
   ];
 
   for (const it of items) {
-    const existing = await get(db, 'SELECT id FROM menu_items WHERE name = ?', [it.name]);
+    const existing = await get(db, 'SELECT id, image_url FROM menu_items WHERE name = ?', [it.name]);
     if (!existing) {
       await run(
         db,
         'INSERT INTO menu_items (name, description, price_cents, image_url, is_available, category) VALUES (?, ?, ?, ?, 1, ?)',
         [it.name, it.description, it.price_cents, it.image_url, it.category]
+      );
+    } else if (!existing.image_url || existing.image_url.trim() === '') {
+      await run(
+        db,
+        'UPDATE menu_items SET image_url = ?, description = ? WHERE id = ?',
+        [it.image_url, it.description, existing.id]
       );
     }
   }

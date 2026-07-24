@@ -11,7 +11,9 @@ function flattenMenuItems(menu) {
   return Object.values(menu.categories).flatMap((items) => items || []);
 }
 
-export default function AppHome({ user, cartCount, onNavigate }) {
+const FALLBACK_DISH_IMG = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&auto=format&fit=crop&q=80';
+
+export default function AppHome({ user, cartCount, onNavigate, onAddToCart }) {
   const [featuredItems, setFeaturedItems] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +26,7 @@ export default function AppHome({ user, cartCount, onNavigate }) {
       try {
         const [menuData, orderData] = await Promise.all([api.getMenu(), api.getOrders()]);
         if (!alive) return;
-        setFeaturedItems(flattenMenuItems(menuData).slice(0, 3));
+        setFeaturedItems(flattenMenuItems(menuData).slice(0, 4));
         setOrders(orderData?.orders || []);
       } catch {
         if (!alive) return;
@@ -49,20 +51,21 @@ export default function AppHome({ user, cartCount, onNavigate }) {
     <div className="page">
       <section className="heroCard">
         <div>
-          <div className="eyebrow">{greeting}, {user?.name || 'guest'}</div>
-          <h1>Fresh meals, quick delivery, and a smoother ordering experience.</h1>
+          <div className="eyebrow">✨ {greeting}, {user?.name || 'Valued Guest'}</div>
+          <h1>Craving Kathmandu's finest flavors? Delivered hot.</h1>
           <p className="heroText">
-            Explore signature dishes, keep your cart ready, and follow every order from kitchen to doorstep.
+            Savor authentic momos, aromatic biryanis, and Newari feasts prepared by Kathmandu Valley's top chefs and delivered straight to your doorstep.
           </p>
           <div className="heroActions">
             <button className="btn btnPrimary" onClick={() => onNavigate('menu')}>
-              Browse menu
+              Browse full menu →
             </button>
             <button className="btn btnGhost" onClick={() => onNavigate('orders')}>
-              Track orders
+              Track live orders
             </button>
           </div>
         </div>
+
         <div className="heroStats">
           <div className="statCard">
             <div className="statValue">{cartCount}</div>
@@ -73,8 +76,8 @@ export default function AppHome({ user, cartCount, onNavigate }) {
             <div className="statLabel">Orders placed</div>
           </div>
           <div className="statCard">
-            <div className="statValue">24/7</div>
-            <div className="statLabel">Kitchen support</div>
+            <div className="statValue">25 min</div>
+            <div className="statLabel">Avg delivery</div>
           </div>
         </div>
       </section>
@@ -83,22 +86,29 @@ export default function AppHome({ user, cartCount, onNavigate }) {
         <div className="card">
           <div className="sectionHead">
             <div>
-              <div className="sectionTitle">Featured dishes</div>
-              <div className="muted">Popular favorites available right now</div>
+              <div className="sectionTitle">Today's Chef Specials</div>
+              <div className="muted">Hand-crafted signature dishes ready for instant order</div>
             </div>
+            <button className="linkBtn" onClick={() => onNavigate('menu')}>View all</button>
           </div>
 
           {loading ? (
-            <div className="emptyState">Loading featured items...</div>
+            <div className="emptyState">Loading featured dishes...</div>
           ) : featuredItems.length === 0 ? (
             <div className="emptyState">No featured dishes available yet.</div>
           ) : (
             <div className="featureList">
               {featuredItems.map((item) => (
                 <div key={item.id} className="featureItem">
-                  <div>
+                  <img
+                    src={item.image_url || FALLBACK_DISH_IMG}
+                    alt={item.name}
+                    className="featureThumb"
+                    onError={(e) => { e.target.src = FALLBACK_DISH_IMG; }}
+                  />
+                  <div style={{ flex: 1 }}>
                     <div className="featureName">{item.name}</div>
-                    <div className="muted">{item.description}</div>
+                    <div className="mutedSmall">{item.description}</div>
                   </div>
                   <div className="featureMeta">{formatINR(item.price_cents)}</div>
                 </div>
@@ -110,23 +120,26 @@ export default function AppHome({ user, cartCount, onNavigate }) {
         <div className="card">
           <div className="sectionHead">
             <div>
-              <div className="sectionTitle">Quick actions</div>
-              <div className="muted">Move from browsing to checkout in seconds</div>
+              <div className="sectionTitle">Quick shortcuts</div>
+              <div className="muted">Order management & cart options</div>
             </div>
           </div>
           <div className="quickList">
             <button className="quickItem" onClick={() => onNavigate('menu')}>
-              Browse menu
+              <span>📖 Browse Explorative Menu</span>
+              <span>→</span>
             </button>
             <button className="quickItem" onClick={() => onNavigate('cart')}>
-              View cart
+              <span>🛒 View Cart ({cartCount})</span>
+              <span>→</span>
             </button>
             <button className="quickItem" onClick={() => onNavigate('orders')}>
-              View orders
+              <span>📦 Order History & Live Track</span>
+              <span>→</span>
             </button>
           </div>
           <div className="miniNotice">
-            Your current cart contains {cartCount} item{cartCount === 1 ? '' : 's'}.
+            🚀 <strong>Live Track Active:</strong> Courier position updates automatically in real-time via Socket.IO.
           </div>
         </div>
       </div>
@@ -135,38 +148,43 @@ export default function AppHome({ user, cartCount, onNavigate }) {
         <div className="card">
           <div className="sectionHead">
             <div>
-              <div className="sectionTitle">Latest order</div>
-              <div className="muted">Stay updated with the newest delivery progress</div>
+              <div className="sectionTitle">Recent Order Status</div>
+              <div className="muted">Track your active order progress</div>
             </div>
           </div>
           {latestOrder ? (
-            <div className="featureItem">
+            <div className="featureItem" style={{ padding: 16 }}>
               <div>
                 <div className="featureName">Order #{latestOrder.id}</div>
-                <div className="muted">Status: {latestOrder.status}</div>
+                <div className="mutedSmall" style={{ marginTop: 2 }}>Status: <strong style={{ color: 'var(--brand-primary)' }}>{latestOrder.status}</strong></div>
+                <div className="mutedSmall">Placed at: {new Date(latestOrder.created_at).toLocaleTimeString()}</div>
               </div>
-              <div className="featureMeta">{formatINR(latestOrder.total_cents)}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+                <div className="featureMeta">{formatINR(latestOrder.total_cents)}</div>
+                <button className="btn btnGhost" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={() => onNavigate('orders')}>
+                  Details →
+                </button>
+              </div>
             </div>
           ) : (
-            <div className="emptyState">No orders yet. Your first order will appear here.</div>
+            <div className="emptyState">No recent orders yet. Your first order will appear here.</div>
           )}
         </div>
 
         <div className="card">
           <div className="sectionHead">
             <div>
-              <div className="sectionTitle">Why it stands out</div>
-              <div className="muted">Hospitality, speed, and clarity built in</div>
+              <div className="sectionTitle">Why Khaja Point?</div>
+              <div className="muted">Premium dining built with modern web tech</div>
             </div>
           </div>
           <ul className="bulletList">
-            <li className="bulletPoint">Elegant, responsive design for desktop and mobile</li>
-            <li className="bulletPoint">Secure authentication and session handling</li>
-            <li className="bulletPoint">Live delivery updates with a polished tracking view</li>
+            <li className="bulletPoint">Authentic Valley recipes prepared fresh on order</li>
+            <li className="bulletPoint">Esewa & Khalti mock instant digital payment options</li>
+            <li className="bulletPoint">Live map tracking with Socket.IO courier coordinates</li>
           </ul>
         </div>
       </div>
     </div>
   );
 }
-

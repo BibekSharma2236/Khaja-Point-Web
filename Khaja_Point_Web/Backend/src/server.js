@@ -29,16 +29,24 @@ const PORT = process.env.PORT || 3001;
 const { attachSocket } = require('./socket');
 attachSocket(server);
 
-initDb()
-  .then(() => {
-    server.listen(PORT, () => {
+function startServer() {
+  initDb()
+    .then(() => {
+      server.listen(PORT, () => {
+        // eslint-disable-next-line no-console
+        console.log(`Khaja Point backend listening on http://localhost:${PORT}`);
+      });
+    })
+    .catch((err) => {
       // eslint-disable-next-line no-console
-      console.log(`Khaja Point backend listening on http://localhost:${PORT}`);
+      console.error('DB init failed:', err);
+      process.exit(1);
     });
-  })
-  .catch((err) => {
-    // eslint-disable-next-line no-console
-    console.error('DB init failed:', err);
-    process.exit(1);
-  });
+}
+
+if (require.main === module) {
+  startServer();
+}
+
+module.exports = app;
 
